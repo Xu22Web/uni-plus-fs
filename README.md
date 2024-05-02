@@ -108,7 +108,7 @@ pnpm install uni-plus-fs
      * 反向操作标记
      * 其本身没有任何效果，需与create属性值设置为true时一起使用，如果目标文件或目录已经存在则会导致文件或目录打开失败，默认值为false。
      */
-    exclusive: false
+    exclusive: false,
     /**
      * 是否覆盖现有文件或目录
      */
@@ -136,7 +136,7 @@ pnpm install uni-plus-fs
      * 反向操作标记
      * 其本身没有任何效果，需与create属性值设置为true时一起使用，如果目标文件或目录已经存在则会导致文件或目录打开失败，默认值为false。
      */
-    exclusive: false
+    exclusive: false,
     /**
      * 是否覆盖现有文件或目录
      */
@@ -180,7 +180,7 @@ pnpm install uni-plus-fs
     /**
      * 是否递归删除目录及其所有子目录
      */
-    recursive: true
+    recursive: true,
     /**
      * 当为 true 时，如果 path 不存在，则异常将被忽略。默认值：false
      */
@@ -230,7 +230,7 @@ pnpm install uni-plus-fs
      * 反向操作标记
      * 其本身没有任何效果，需与create属性值设置为true时一起使用，如果目标文件或目录已经存在则会导致文件或目录打开失败，默认值为false。
      */
-    exclusive: false
+    exclusive: false,
     /**
      * 是否覆盖现有文件或目录
      */
@@ -255,7 +255,7 @@ pnpm install uni-plus-fs
      * 反向操作标记
      * 其本身没有任何效果，需与create属性值设置为true时一起使用，如果目标文件或目录已经存在则会导致文件或目录打开失败，默认值为false。
      */
-    exclusive: false
+    exclusive: false,
     /**
      * 是否覆盖现有文件或目录
      */
@@ -394,7 +394,7 @@ pnpm install uni-plus-fs
      * 反向操作标记
      * 其本身没有任何效果，需与create属性值设置为true时一起使用，如果目标文件或目录已经存在则会导致文件或目录打开失败，默认值为false。
      */
-    exclusive: false
+    exclusive: false,
     /**
      * 是否覆盖现有文件或目录
      */
@@ -421,7 +421,7 @@ pnpm install uni-plus-fs
      * 反向操作标记
      * 其本身没有任何效果，需与create属性值设置为true时一起使用，如果目标文件或目录已经存在则会导致文件或目录打开失败，默认值为false。
      */
-    exclusive: false
+    exclusive: false,
     /**
      * 是否覆盖现有文件或目录
      */
