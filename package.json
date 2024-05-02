@@ -1,0 +1,42 @@
+{
+  "name": "uni-plus-fs",
+  "version": "1.0.0",
+  "description": "基于 plus 的 uni-app 文件系统",
+  "author": "xu22web <https://github.com/xu22web>",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "dev": "tsup --watch",
+    "build": "tsup"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/xu22web/uni-plus-fs.git"
+  },
+  "bugs": {
+    "url": "https://github.com/xu22web/uni-plus-fs/issues"
+  },
+  "keywords": [
+    "uni-app"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@dcloudio/types": "^3.4.8",
+    "tsup": "^8.0.2",
+    "typescript": "^5.4.5"
+  },
+  "peerDependencies": {
+    "@dcloudio/types": "^3.4.8"
+  }
+}
