@@ -1,12 +1,12 @@
+import { createDirectory, readDirectory, removeDirectory } from './directory'
 import {
-  copyDirectory,
-  createDirectory,
-  moveDirectory,
-  readDirectory,
-  removeDirectory
-} from './directory'
-import { getDirectoryEntry, getFileEntry, getFileRootEntry } from './entry'
+  getDirectoryEntry,
+  getEntry,
+  getFileEntry,
+  getFileRootEntry
+} from './entry'
 import { copyFile, moveFile, readFile, removeFile, writeFile } from './file'
+import { copy, move } from './path'
 import type { IFileRootOptions } from './types'
 
 /**
@@ -25,18 +25,25 @@ export const createFileSystemManager = async (options: IFileRootOptions) => {
       callback(root, ...args)
   return {
     /**
+     * 获取文件 / 文件夹操作对象
+     *
+     * @param path 路径
+     * @returns
+     */
+    getEntry: handler(getEntry),
+    /**
      * 获取文件操作对象
      *
-     * @param path — 路径
-     * @param flag — 操作配置
+     * @param path 路径
+     * @param flag 操作配置
      * @returns
      */
     getFileEntry: handler(getFileEntry),
     /**
      * 获取文件夹操作对象
      *
-     * @param path — 路径
-     * @param flag — 操作配置
+     * @param path 路径
+     * @param flag 操作配置
      * @returns
      */
     getDirectoryEntry: handler(getDirectoryEntry),
@@ -49,27 +56,10 @@ export const createFileSystemManager = async (options: IFileRootOptions) => {
      */
     readFile: handler(readFile),
     /**
-     * 移动文件
-     *
-     * @param src 源路径
-     * @param dest 目标路径
-     * @param flag 操作配置
-     * @returns
-     */
-    moveFile: handler(moveFile),
-    /**
-     * 移动文件
-     *
-     * @param src 源路径
-     * @param dest 目标路径
-     * @param flag 操作配置
-     * @returns
-     */
-    copyFile: handler(copyFile),
-    /**
      * 删除文件
      *
      * @param path 路径
+     * @param flag 操作配置
      * @returns
      */
     removeFile: handler(removeFile),
@@ -97,30 +87,44 @@ export const createFileSystemManager = async (options: IFileRootOptions) => {
      */
     readDirectory: handler(readDirectory),
     /**
-     * 移动文件夹
-     *
-     * @param src 源路径
-     * @param dest 目标路径
-     * @param flag 操作配置
-     * @returns
-     */
-    moveDirectory: handler(moveDirectory),
-    /**
-     * 移动文件夹
-     *
-     * @param src 源路径
-     * @param dest 目标路径
-     * @param flag 操作配置
-     * @returns
-     */
-    copyDirectory: handler(copyDirectory),
-    /**
      * 删除文件夹
      *
      * @param path 路径
-     * @param recursive 递归
+     * @param flag 操作配置
      * @returns
      */
-    removeDirectory: handler(removeDirectory)
+    removeDirectory: handler(removeDirectory),
+    /**
+     * 移动文件
+     *
+     * @param src 源路径
+     * @param dest 目标路径
+     * @param flag 操作配置
+     * @returns
+     */
+    moveFile: handler(moveFile),
+    /**
+     * 移动文件
+     *
+     * @param src 源路径
+     * @param dest 目标路径
+     * @param flag 操作配置
+     * @returns
+     */
+    copyFile: handler(copyFile),
+    /**
+     * 移动路径
+     * @param src 源路径
+     * @param dest 目标路径
+     * @param flag 操作配置
+     */
+    move: handler(move),
+    /**
+     * 移动路径
+     * @param src 源路径
+     * @param dest 目标路径
+     * @param flag 操作配置
+     */
+    copy: handler(copy)
   }
 }

@@ -1,11 +1,5 @@
-import {
-  copyEntry,
-  getDestDirectoryEntry,
-  getDirectoryEntry,
-  moveEntry,
-  removeDirectoryEntry
-} from './entry'
-import type { IFileFlags } from './types'
+import { getDirectoryEntry, removeDirectoryEntry } from './entry'
+import type { IDirectoryRemoveFlags, IFileRemoveFlags } from './types'
 
 /**
  * 创建文件夹
@@ -45,68 +39,29 @@ export const readDirectory = async (
 }
 
 /**
- * 移动文件夹
- *
- * @param parent 父文件夹操作对象
- * @param src 源路径
- * @param dest 目标路径
- * @param flag 操作配置
- * @returns
- */
-export const moveDirectory = async (
-  parent: PlusIoDirectoryEntry,
-  src: string,
-  dest: string,
-  flag: IFileFlags
-) => {
-  const srcDirectoryEntry = await getDirectoryEntry(parent, src)
-  const destDirectoryEntry = await getDestDirectoryEntry(
-    parent,
-    srcDirectoryEntry,
-    dest,
-    flag
-  )
-  return moveEntry(srcDirectoryEntry, destDirectoryEntry)
-}
-
-/**
- * 复制文件夹
- *
- * @param parent 父文件夹操作对象
- * @param src 源路径
- * @param dest 目标路径
- * @param flag 操作配置
- * @returns
- */
-export const copyDirectory = async (
-  parent: PlusIoDirectoryEntry,
-  src: string,
-  dest: string,
-  flag: IFileFlags
-) => {
-  const srcDirectoryEntry = await getDirectoryEntry(parent, src)
-  const destDirectoryEntry = await getDestDirectoryEntry(
-    parent,
-    srcDirectoryEntry,
-    dest,
-    flag
-  )
-  return copyEntry(srcDirectoryEntry, destDirectoryEntry)
-}
-
-/**
  * 删除文件夹
  *
  * @param parent 父文件夹操作对象
  * @param path 路径
- * @param recursive 递归
+ * @param flag 操作配置
  * @returns
  */
 export const removeDirectory = async (
   parent: PlusIoDirectoryEntry,
   path: string,
-  recursive?: boolean
+  flag: IDirectoryRemoveFlags = {
+    recursive: false,
+    force: false
+  }
 ) => {
-  const directoryEntry = await getDirectoryEntry(parent, path)
-  return removeDirectoryEntry(directoryEntry, recursive)
+  let directoryEntry: PlusIoDirectoryEntry | undefined
+  try {
+    directoryEntry = await getDirectoryEntry(parent, path)
+  } catch (err: any) {
+    if (flag.force) {
+      return
+    }
+    throw err
+  }
+  return removeDirectoryEntry(directoryEntry, flag.recursive)
 }

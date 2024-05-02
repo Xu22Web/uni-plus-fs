@@ -7,7 +7,14 @@ import {
   removeFileEntry,
   writeFileEntry
 } from './entry'
-import type { IFileFlags, IFileFormat, IFileWriteOptions } from './types'
+import type {
+  IFileCopyFlags,
+  IFileFormat,
+  IFileMoveFlags,
+  IFileRemoveFlags,
+  IFileWriteOptions
+} from './types'
+import { basename, dirname } from './utils/path'
 
 /**
  * 写入文件
@@ -54,31 +61,6 @@ export const readFile = async (
 }
 
 /**
- * 移动文件
- *
- * @param parent 父文件夹操作对象
- * @param src 源路径
- * @param dest 目标路径
- * @param flag 操作配置
- * @returns
- */
-export const moveFile = async (
-  parent: PlusIoDirectoryEntry,
-  src: string,
-  dest: string,
-  flag?: IFileFlags
-) => {
-  const srcFileEntry = await getFileEntry(parent, src)
-  const destDirectoryEntry = await getDestDirectoryEntry(
-    parent,
-    srcFileEntry,
-    dest,
-    flag
-  )
-  return moveEntry(srcFileEntry, destDirectoryEntry)
-}
-
-/**
  * 复制文件
  *
  * @param parent 父文件夹操作对象
@@ -91,16 +73,45 @@ export const copyFile = async (
   parent: PlusIoDirectoryEntry,
   src: string,
   dest: string,
-  flag?: IFileFlags
+  flag?: IFileCopyFlags
 ) => {
   const srcFileEntry = await getFileEntry(parent, src)
+  const destDirName = dirname(dest)
+  const destFileName = basename(dest)
   const destDirectoryEntry = await getDestDirectoryEntry(
     parent,
     srcFileEntry,
-    dest,
+    destDirName,
     flag
   )
-  return copyEntry(srcFileEntry, destDirectoryEntry)
+  return copyEntry(srcFileEntry, destDirectoryEntry, destFileName)
+}
+
+/**
+ * 移动文件
+ *
+ * @param parent 父文件夹操作对象
+ * @param src 源路径
+ * @param dest 目标路径
+ * @param flag 操作配置
+ * @returns
+ */
+export const moveFile = async (
+  parent: PlusIoDirectoryEntry,
+  src: string,
+  dest: string,
+  flag?: IFileMoveFlags
+) => {
+  const srcFileEntry = await getFileEntry(parent, src)
+  const destDirName = dirname(dest)
+  const destFileName = basename(dest)
+  const destDirectoryEntry = await getDestDirectoryEntry(
+    parent,
+    srcFileEntry,
+    destDirName,
+    flag
+  )
+  return moveEntry(srcFileEntry, destDirectoryEntry, destFileName)
 }
 
 /**
@@ -112,8 +123,19 @@ export const copyFile = async (
  */
 export const removeFile = async (
   parent: PlusIoDirectoryEntry,
-  path: string
+  path: string,
+  flag: IFileRemoveFlags = {
+    force: false
+  }
 ) => {
-  const fileEntry = await getFileEntry(parent, path)
+  let fileEntry: PlusIoFileEntry | undefined
+  try {
+    fileEntry = await getFileEntry(parent, path)
+  } catch (err) {
+    if (flag.force) {
+      return
+    }
+    throw err
+  }
   return removeFileEntry(fileEntry)
 }

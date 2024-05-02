@@ -61,10 +61,10 @@ pnpm install uni-plus-fs
 
   ```ts
   // 读取为文本
-  const fileText = await fs.readFile('a.txt', 'text')
+  const text = await fs.readFile('a.txt', 'text')
 
   // 读取为 base64
-  const fileBase64 = await fs.readFile('a.txt', 'base64')
+  const base64 = await fs.readFile('a.txt', 'base64')
   ```
 
 - 写入文件
@@ -80,17 +80,25 @@ pnpm install uni-plus-fs
 - 删除文件
 
   ```ts
-  await fs.removeFile('a.txt')
+  await fs.removeFile('a.txt', {
+    /**
+     * 当为 true 时，如果 path 不存在，则异常将被忽略。默认值：false
+     */
+    force: true
+  })
   ```
 
 - 移动文件
 
   ```ts
   // 普通移动
+  await fs.moveFile('a.txt', 'b/c.txt')
+
+  // 重命名
   await fs.moveFile('a.txt', 'b.txt')
 
   // 覆盖移动
-  await fs.moveFile('a.txt', 'b.txt', {
+  await fs.moveFile('a.txt', 'b/c.txt', {
     /**
      * 是否创建对象标记
      * 指示如果文件或目录不存在时是否进行创建，默认值为false。
@@ -112,10 +120,13 @@ pnpm install uni-plus-fs
 
   ```ts
   // 普通复制
+  await fs.copyFile('a.txt', 'b/c.txt')
+
+  // 重命名
   await fs.copyFile('a.txt', 'b.txt')
 
   // 覆盖复制
-  await fs.copyFile('a.txt', 'b.txt', {
+  await fs.copyFile('a.txt', 'b/c.txt', {
     /**
      * 是否创建对象标记
      * 指示如果文件或目录不存在时是否进行创建，默认值为false。
@@ -165,63 +176,22 @@ pnpm install uni-plus-fs
   await fs.removeDirectory('a')
 
   // 递归删除
-  await fs.removeDirectory('a', true)
+  await fs.removeDirectory('a', {
+    /**
+     * 是否递归删除目录及其所有子目录
+     */
+    recursive: true
+    /**
+     * 当为 true 时，如果 path 不存在，则异常将被忽略。默认值：false
+     */
+    force: true
+  })
   ```
 
 - 读取文件夹
 
   ```ts
   const entries = await fs.readDirectory('a')
-  ```
-
-- 复制文件夹
-
-  ```ts
-  // 普通复制
-  await fs.copyDirectory('a', 'b')
-
-  // 覆盖复制
-  await fs.copyDirectory('a', 'b',{
-    /**
-     * 是否创建对象标记
-     * 指示如果文件或目录不存在时是否进行创建，默认值为false。
-     */
-    create: true,
-    /**
-     * 反向操作标记
-     * 其本身没有任何效果，需与create属性值设置为true时一起使用，如果目标文件或目录已经存在则会导致文件或目录打开失败，默认值为false。
-     */
-    exclusive: false
-    /**
-     * 是否覆盖现有文件或目录
-     */
-    force: true
-  })
-  ```
-
-- 移动文件夹
-
-  ```ts
-  // 普通移动
-  await fs.moveDirectory('a', 'b')
-
-  // 覆盖移动
-  await fs.moveDirectory('a', 'b',{
-    /**
-     * 是否创建对象标记
-     * 指示如果文件或目录不存在时是否进行创建，默认值为false。
-     */
-    create: true,
-    /**
-     * 反向操作标记
-     * 其本身没有任何效果，需与create属性值设置为true时一起使用，如果目标文件或目录已经存在则会导致文件或目录打开失败，默认值为false。
-     */
-    exclusive: false
-    /**
-     * 是否覆盖现有文件或目录
-     */
-    force: true
-  })
   ```
 
 - 获取文件夹操作对象
@@ -239,6 +209,64 @@ pnpm install uni-plus-fs
      */
     exclusive: false
   })
+  ```
+
+#### 文件和文件夹
+
+- 复制文件/文件夹
+
+  ```ts
+  // 普通复制
+  await fs.copy('a', 'b')
+
+  // 覆盖复制
+  await fs.copy('a', 'b', {
+    /**
+     * 是否创建对象标记
+     * 指示如果文件或目录不存在时是否进行创建，默认值为false。
+     */
+    create: true,
+    /**
+     * 反向操作标记
+     * 其本身没有任何效果，需与create属性值设置为true时一起使用，如果目标文件或目录已经存在则会导致文件或目录打开失败，默认值为false。
+     */
+    exclusive: false
+    /**
+     * 是否覆盖现有文件或目录
+     */
+    force: true
+  })
+  ```
+
+- 移动文件/文件夹
+
+  ```ts
+  // 普通移动
+  await fs.move('a', 'b')
+
+  // 覆盖移动
+  await fs.move('a', 'b', {
+    /**
+     * 是否创建对象标记
+     * 指示如果文件或目录不存在时是否进行创建，默认值为false。
+     */
+    create: true,
+    /**
+     * 反向操作标记
+     * 其本身没有任何效果，需与create属性值设置为true时一起使用，如果目标文件或目录已经存在则会导致文件或目录打开失败，默认值为false。
+     */
+    exclusive: false
+    /**
+     * 是否覆盖现有文件或目录
+     */
+    force: true
+  })
+  ```
+
+- 文件/文件夹操作对象
+
+  ```ts
+  const entry = await fs.getEntry('a')
   ```
 
 #### 操作对象
@@ -329,10 +357,10 @@ pnpm install uni-plus-fs
   import { readFileEntry } from 'uni-plus-fs'
 
   // 读取为文本
-  const fileText = await readFileEntry(entry, 'text')
+  const text = await readFileEntry(entry, 'text')
 
   // 读取为 base64
-  const fileBase64 = await readFileEntry(entry, 'base64')
+  const base64 = await readFileEntry(entry, 'base64')
   ```
 
 - 写入文件操作对象
@@ -434,9 +462,9 @@ pnpm install uni-plus-fs
   ```ts
   import { getDirectoryEntryInfo } from 'uni-plus-fs'
 
-  // 获取文件信息
+  // 获取文件夹信息
   const info = await getDirectoryEntryInfo(entry)
 
-  // 递归获取文件信息
+  // 递归获取文件夹信息
   const info = await getDirectoryEntryInfo(entry, true)
   ```

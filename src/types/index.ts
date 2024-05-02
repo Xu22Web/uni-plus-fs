@@ -35,9 +35,53 @@ export type IFileRootOptions = IFileRootOptionsPath | IFileRootOptionsType
 /**
  * 文件创建标志
  */
-export interface IFileFlags extends PlusIoFlags {
+export interface IFileCreateFlags extends PlusIoFlags {
   /**
    * 是否覆盖现有文件或目录
+   */
+  force?: boolean
+}
+
+/**
+ * 文件移动标志
+ */
+export interface IFileMoveFlags extends PlusIoFlags {
+  /**
+   * 是否覆盖现有文件或目录
+   */
+  force?: boolean
+}
+
+/**
+ * 文件复制标志
+ */
+export interface IFileCopyFlags extends PlusIoFlags {
+  /**
+   * 是否覆盖现有文件或目录
+   */
+  force?: boolean
+}
+
+/**
+ * 文件删除标志
+ */
+export interface IFileRemoveFlags {
+  /**
+   * 当为 true 时，如果 path 不存在，则异常将被忽略。默认值：false
+   */
+  force?: boolean
+}
+
+/**
+ * 文件夹删除标志
+ */
+export interface IDirectoryRemoveFlags {
+  /**
+   * 是否递归删除目录及其所有子目录
+   */
+  recursive?: boolean
+  /**
+   * 当为 true 时，如果 path 不存在，则异常将被忽略。默认值：false
    */
   force?: boolean
 }

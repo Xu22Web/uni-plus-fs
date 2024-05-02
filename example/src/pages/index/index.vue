@@ -5,13 +5,14 @@
             <button class="btn" @click="writeFile">上传文件</button>
         </view>
         <view class="item">
-            <button class="btn" @click="createFile">创建测试文件</button>
+            <button class="btn" @click="createFile">创建文件</button>
             <button class="btn" @click="moveFile">移动文件</button>
             <button class="btn" @click="copyFile">复制文件</button>
+            <button class="btn" @click="renameFile">重命名文件</button>
         </view>
         <view class="item">
             <image class="img" :src="image" />
-            <input class="input" type="text" v-model.trim="name" placeholder="请输入文件名" />
+            <input class="input" type="text" v-model.trim="name" placeholder="请输入图片名" />
             <button class="btn" @click="writeImage">上传图片</button>
         </view>
         <view class="item">
@@ -46,7 +47,7 @@
 </template>
 
 <script setup lang="ts">
-import { IFileRootType, createFileSystemManager, getDirectoryEntryInfo, getFileEntryInfo, getLocalEntry, readFileEntry, removeDirectoryEntry, removeFileEntry } from 'uni-plus-fs';
+import { IFileRootType, createFileSystemManager, getDirectoryEntryInfo, getFileEntryInfo, getLocalEntry, path, readFileEntry, removeDirectoryEntry, removeFileEntry } from 'uni-plus-fs';
 import { computed, reactive, ref, watch } from 'vue';
 
 const base = 'test'
@@ -57,7 +58,7 @@ const name = ref('测试图片')
 const dirList = ref<string[]>([])
 const fileList = ref<{ isDir: boolean, name: string, size: number, entry: PlusIoFileEntry | PlusIoDirectoryEntry }[]>([])
 const currentDir = computed(() => dirList.value.join('/') ? `/${dirList.value.join('/')}/` : '/')
-const fullDir = computed(() => `${base}${currentDir.value}`)
+const fullDir = computed(() => path.join(base, currentDir.value))
 
 /**
  * 格式化大小
@@ -90,7 +91,8 @@ const writeFile = async () => {
     }
     const fs = await createFileSystemManager({ type: IFileRootType.PRIVATE_DOC })
     try {
-        await fs.writeFile(`${fullDir.value}测试文件.txt`, text.value)
+        const filePath = path.join(fullDir.value, '测试文件.txt')
+        await fs.writeFile(filePath, text.value)
         uni.showToast({
             title: '文件写入成功',
             icon: 'none',
@@ -110,7 +112,8 @@ const writeFile = async () => {
 const createFile = async () => {
     const fs = await createFileSystemManager({ type: IFileRootType.PRIVATE_DOC })
     try {
-        await fs.writeFile(`${fullDir.value}测试文件.txt`, 'test666')
+        const filePath = path.join(fullDir.value, '测试文件.txt')
+        await fs.writeFile(filePath, 'test666')
         uni.showToast({
             title: '文件创建成功',
             icon: 'none',
@@ -124,6 +127,36 @@ const createFile = async () => {
     }
 }
 
+/**
+ * 重命名文件
+ */
+const renameFile = async () => {
+    const fs = await createFileSystemManager({ type: IFileRootType.PRIVATE_DOC })
+    try {
+        const srcFilePath = path.join(fullDir.value, '测试文件.txt')
+        const destFilePath = path.join(fullDir.value, '重命名测试文件.txt')
+        await fs.getFileEntry(srcFilePath)
+        try {
+            await fs.moveFile(srcFilePath, destFilePath, { create: true })
+            uni.showModal({
+                title: '提示',
+                content: `重命名成功 测试文件.txt => 重命名测试文件.txt`,
+                showCancel: false,
+            })
+            getFileList()
+        } catch (err: any) {
+            uni.showToast({
+                title: `文件移动失败 ${err.message} `,
+                icon: 'none',
+            })
+        }
+    } catch (err: any) {
+        uni.showToast({
+            title: `测试文件不存在 ${err.message} `,
+            icon: 'none',
+        })
+    }
+}
 
 /**
  * 移动文件
@@ -131,12 +164,15 @@ const createFile = async () => {
 const moveFile = async () => {
     const fs = await createFileSystemManager({ type: IFileRootType.PRIVATE_DOC })
     try {
-        await fs.getFileEntry(`${fullDir.value}测试文件.txt`)
+        const srcFilePath = path.join(fullDir.value, '测试文件.txt')
+        const destPath = path.join(fullDir.value, 'move')
+        await fs.getFileEntry(srcFilePath)
         try {
-            await fs.moveFile(`${fullDir.value}测试文件.txt`, `${fullDir.value}move`, { create: true, force: true })
-            uni.showToast({
-                title: `文件移动成功 ${currentDir.value}测试文件.txt -> ${currentDir.value}move`,
-                icon: 'none',
+            await fs.move(srcFilePath, destPath, { create: true })
+            uni.showModal({
+                title: '提示',
+                content: `移动成功 测试文件.txt: ${currentDir.value} => ${currentDir.value}move`,
+                showCancel: false,
             })
             getFileList()
         } catch (err: any) {
@@ -159,12 +195,15 @@ const moveFile = async () => {
 const copyFile = async () => {
     const fs = await createFileSystemManager({ type: IFileRootType.PRIVATE_DOC })
     try {
-        await fs.getFileEntry(`${fullDir.value}测试文件.txt`)
+        const srcFilePath = path.join(fullDir.value, '测试文件.txt')
+        const destPath = path.join(fullDir.value, 'copy')
+        await fs.getFileEntry(srcFilePath)
         try {
-            await fs.copyFile(`${fullDir.value}测试文件.txt`, `${fullDir.value}copy`, { create: true, force: true })
-            uni.showToast({
-                title: `文件复制成功 ${currentDir.value}测试文件.txt -> ${currentDir.value}copy`,
-                icon: 'none',
+            await fs.copy(srcFilePath, destPath, { create: true, force: true })
+            uni.showModal({
+                title: '提示',
+                content: `复制成功 测试文件.txt: ${currentDir.value} => ${currentDir.value}copy`,
+                showCancel: false
             })
             getFileList()
         } catch (err: any) {
@@ -198,12 +237,13 @@ const writeImage = async () => {
         sourceType: ['album', 'camera']
     })
     const filePath = res.tempFilePaths[0]
-    const suffix = filePath.split('.').pop() || 'png'
+    const suffix = path.extname(filePath)
     const entry = await getLocalEntry<PlusIoFileEntry>(filePath)
     const base64 = await readFileEntry(entry, 'base64')
     const fs = await createFileSystemManager({ type: IFileRootType.PRIVATE_DOC })
     try {
-        const entry = await fs.writeFile(`${fullDir.value}${name.value}.${suffix}`, base64, 'base64')
+        const imgPath = path.join(fullDir.value, `${name.value}${suffix}`)
+        const entry = await fs.writeFile(imgPath, base64, 'base64')
         image.value = await readFileEntry(entry, 'base64')
         uni.showToast({
             title: '图片写入成功',
@@ -231,7 +271,8 @@ const createDirectory = async () => {
     }
     const fs = await createFileSystemManager({ type: IFileRootType.PRIVATE_DOC })
     try {
-        await fs.createDirectory(`${fullDir.value}${dir.value} `)
+        const dirPath = path.join(fullDir.value, dir.value)
+        await fs.createDirectory(dirPath)
         uni.showToast({
             title: '文件夹创建成功',
             icon: 'none',
@@ -298,9 +339,9 @@ const handlePreview = async (item: { isDir: boolean, name: string, size: number,
         })
         return
     }
-    const filePath = await readFileEntry(<PlusIoFileEntry>item.entry, 'text')
+    const data = await readFileEntry(<PlusIoFileEntry>item.entry, 'text')
     uni.showToast({
-        title: `文件内容: ${filePath} `,
+        title: `文件内容: ${data} `,
         icon: 'none',
     })
 }

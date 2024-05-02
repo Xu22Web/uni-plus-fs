@@ -1,9 +1,10 @@
 import type {
-  IFileFlags,
+  IFileCreateFlags,
   IFileFormat,
   IFileRootOptions,
   IFileRootType
 } from './types'
+import { join } from './utils/path'
 
 /**
  * 获取文件系统对象
@@ -94,7 +95,7 @@ export const getParentEntry = async (
 export const getFileEntryInfo = async (entry: PlusIoFileEntry) => {
   return new Promise<PlusIoMetadata>((resolve, reject) => {
     entry.getMetadata(resolve, (err) =>
-      reject(new Error(`get entry info failed: ${err.message}`))
+      reject(new Error(`get file entry info failed: ${err.message}`))
     )
   })
 }
@@ -113,7 +114,8 @@ export const getDirectoryEntryInfo = async (
   return new Promise<PlusIoMetadata>((resolve, reject) => {
     entry.getMetadata(
       resolve,
-      (err) => reject(new Error(`get entry info failed: ${err.message}`)),
+      (err) =>
+        reject(new Error(`get directory entry info failed: ${err.message}`)),
       recursive
     )
   })
@@ -202,17 +204,19 @@ export const writeFileEntry = async (
  * 移动文件 / 文件夹操作对象
  *
  * @param srcEntry 源文件 / 文件夹操作对象
- * @param destEntry 目标文件 / 文件夹操作对象
+ * @param destEntry 目标文件夹操作对象
+ * @param newName 新名称
  * @returns
  */
 export const moveEntry = async (
   srcEntry: PlusIoFileEntry | PlusIoDirectoryEntry,
-  destEntry: PlusIoDirectoryEntry
+  destEntry: PlusIoDirectoryEntry,
+  newName?: string
 ) => {
   return new Promise<void>((resolve, reject) => {
     srcEntry.moveTo(
       destEntry,
-      undefined,
+      newName,
       () => resolve(),
       (err) => reject(new Error(`move entry failed: ${err.message}`))
     )
@@ -223,17 +227,19 @@ export const moveEntry = async (
  * 复制文件 / 文件夹操作对象
  *
  * @param srcEntry 源文件 / 文件夹操作对象
- * @param destEntry 目标文件 / 文件夹操作对象
+ * @param destEntry 目标文件夹操作对象
+ * @param newName 新名称
  * @returns
  */
 export const copyEntry = async (
   srcEntry: PlusIoFileEntry | PlusIoDirectoryEntry,
-  destEntry: PlusIoDirectoryEntry
+  destEntry: PlusIoDirectoryEntry,
+  newName?: string
 ) => {
   return new Promise<void>((resolve, reject) => {
     srcEntry.copyTo(
       destEntry,
-      undefined,
+      newName,
       () => resolve(),
       (err) => reject(new Error(`copy entry failed: ${err.message}`))
     )
@@ -324,6 +330,19 @@ export const getDirectoryEntry = async (
 }
 
 /**
+ * 获取文件操作对象
+ *
+ * @param parent 父文件夹操作对象
+ * @param path 路径
+ * @returns
+ */
+export const getEntry = async (parent: PlusIoDirectoryEntry, path: string) => {
+  const parentPath = parent.toLocalURL()
+  const entryPath = join(parentPath, path)
+  return getLocalEntry(entryPath)
+}
+
+/**
  * 获取文件
  *
  * @param fileEntry 文件操作对象
@@ -338,7 +357,25 @@ export const getFile = async (fileEntry: PlusIoFileEntry) => {
 }
 
 /**
- * 获取目的操作对象
+ * 相同文件 / 文件夹操作对象
+ *
+ * @param entry1
+ * @param entry2
+ * @returns
+ */
+export const isSameEntry = (
+  entry1: PlusIoFileEntry | PlusIoDirectoryEntry,
+  entry2: PlusIoFileEntry | PlusIoDirectoryEntry
+) => {
+  return (
+    entry1.toLocalURL() === entry2.toLocalURL() &&
+    entry1.isDirectory === entry2.isDirectory &&
+    entry1.isFile === entry2.isFile
+  )
+}
+
+/**
+ * 获取目的文件夹操作对象
  *
  * @param parent 父文件夹操作对象
  * @param src 源路径
@@ -349,21 +386,26 @@ export const getDestDirectoryEntry = async (
   parent: PlusIoDirectoryEntry,
   srcEntry: PlusIoFileEntry | PlusIoDirectoryEntry,
   dest: string,
-  flag: IFileFlags = { create: false, exclusive: false, force: false }
+  flag: IFileCreateFlags = { create: false, exclusive: false, force: false }
 ) => {
+  if (!dest) {
+    return parent
+  }
   const destDirectoryEntry = await getDirectoryEntry(parent, dest, flag)
   // 未强制
   if (!flag.force) {
     return destDirectoryEntry
   }
   const destDirectory = destDirectoryEntry.toLocalURL()
-  const destPath = `${destDirectory}${srcEntry.name}`
-  let destEntry: PlusIoDirectoryEntry | PlusIoFileEntry | null = null
+  const destPath = join(destDirectory, srcEntry.name!)
+  let destEntry: PlusIoDirectoryEntry | PlusIoFileEntry | undefined
   try {
     destEntry = await getLocalEntry(destPath)
-  } catch (err) {}
-  // 不存在同名文件
-  if (!destEntry) {
+  } catch (err) {
+    return destDirectoryEntry
+  }
+  // 相同文件
+  if (isSameEntry(srcEntry, destEntry)) {
     return destDirectoryEntry
   }
   if (destEntry.isDirectory || !destEntry.isFile) {
