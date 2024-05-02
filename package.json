@@ -1,13 +1,14 @@
 {
   "name": "uni-plus-fs",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "基于 plus 的 uni-app 文件系统",
   "author": "xu22web <https://github.com/xu22web>",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "doc"
   ],
   "exports": {
     ".": {
